@@ -25,16 +25,25 @@ var getClientConfig = function(mobileClient, serviceConfig, clusterInfo) {
   }, null, '  ');
 };
 
-var getServiceConfig = function(secrets, SecretsService) {
+var getServiceConfig = function(secrets, externalURL, SecretsService) {
   return _.map(secrets, function(secret) {
     var decodedData = SecretsService.decodeSecretData(secret.data);
-    return {
+    var conf ={
       id: _.get(secret, 'metadata.name'),
       name: _.get(decodedData, 'name'),
       type: decodedData.type,
       url: decodedData.uri,
       config: decodedData.config ? JSON.parse(decodedData.config) : {}
     };
+    if(externalURL){
+      var serviceName = conf.name || _.get(secret,"metadata.labels.serviceName");
+      if(externalURL.substr(externalURL.length -1) !== "/"){
+        externalURL+="/";
+      }
+      externalURL+="mobile/"+serviceName+"/";
+      conf.url = conf.url.replace(/http(s):\/\/.*\//,externalURL);
+    }
+    return conf;
   });
 };
 
@@ -50,13 +59,13 @@ function MobileClientConfigCtrl(API_CFG, APIService, DataService, SecretsService
           return _.get(secret, 'metadata.labels.clientId') === ctrl.mobileClient.metadata.name;
         });
 
-        ctrl.serviceConfig = getServiceConfig(ctrl.secrets, SecretsService);
+        ctrl.serviceConfig = getServiceConfig(ctrl.secrets,_.get(changes.mobileClient.currentValue,"spec.dmzUrl"), SecretsService);
         ctrl.prettyConfig = getClientConfig(ctrl.mobileClient, ctrl.serviceConfig, API_CFG);
       }, {errorNotification: false});
       watches.push(ctrl.secretWatch);
     }
     if (changes.mobileClient && ctrl.secrets) {
-      ctrl.serviceConfig = getServiceConfig(ctrl.secrets, SecretsService);
+      ctrl.serviceConfig = getServiceConfig(ctrl.secrets, _.get(changes.mobileClient.currentValue,"spec.dmzUrl"), SecretsService);
       ctrl.prettyConfig = getClientConfig(ctrl.mobileClient, ctrl.serviceConfig, API_CFG);
     }
   };

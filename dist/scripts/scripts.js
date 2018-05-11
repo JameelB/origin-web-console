@@ -619,10 +619,10 @@ namespace: _.get(a, "mobileClient.metadata.namespace")
 }, function(t) {
 a.secrets = _.filter(t.by("metadata.name"), function(e) {
 return _.get(e, "metadata.labels.clientId") === a.mobileClient.metadata.name;
-}), a.serviceConfig = getServiceConfig(a.secrets, r), a.prettyConfig = getClientConfig(a.mobileClient, a.serviceConfig, e);
+}), a.serviceConfig = getServiceConfig(a.secrets, _.get(i.mobileClient.currentValue, "spec.dmzUrl"), r), a.prettyConfig = getClientConfig(a.mobileClient, a.serviceConfig, e);
 }, {
 errorNotification: !1
-}), o.push(a.secretWatch)), i.mobileClient && a.secrets && (a.serviceConfig = getServiceConfig(a.secrets, r), a.prettyConfig = getClientConfig(a.mobileClient, a.serviceConfig, e));
+}), o.push(a.secretWatch)), i.mobileClient && a.secrets && (a.serviceConfig = getServiceConfig(a.secrets, _.get(i.mobileClient.currentValue, "spec.dmzUrl"), r), a.prettyConfig = getClientConfig(a.mobileClient, a.serviceConfig, e));
 }, a.$onDestroy = function() {
 n.unwatchAll(o);
 };
@@ -11949,16 +11949,20 @@ namespace: _.get(e, "metadata.namespace"),
 clientId: _.get(e, "metadata.name"),
 services: t
 }, null, "  ");
-}, getServiceConfig = function(e, t) {
+}, getServiceConfig = function(e, t, n) {
 return _.map(e, function(e) {
-var n = t.decodeSecretData(e.data);
-return {
+var r = n.decodeSecretData(e.data), a = {
 id: _.get(e, "metadata.name"),
-name: _.get(n, "name"),
-type: n.type,
-url: n.uri,
-config: JSON.parse(n.config)
+name: _.get(r, "name"),
+type: r.type,
+url: r.uri,
+config: r.config ? JSON.parse(r.config) : {}
 };
+if (t) {
+var o = a.name || _.get(e, "metadata.labels.serviceName");
+"/" !== t.substr(t.length - 1) && (t += "/"), t += "mobile/" + o + "/", a.url = a.url.replace(/http(s):\/\/.*\//, t);
+}
+return a;
 });
 };
 
