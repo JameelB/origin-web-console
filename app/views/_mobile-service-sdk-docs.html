@@ -1,6 +1,6 @@
 <div class="col-md-6 service-instance-getting-started" ng-repeat="sdkInfo in ctrl.serviceSdkInfo">
   <div class="col-md-12">
-    <img class="logo" ng-src="{{sdkInfo.logo}}">
+    <img ng-if="sdkInfo.logo" class="logo" ng-src="{{sdkInfo.logo}}">
     <div class="service-details">
       <h4>
         <div>

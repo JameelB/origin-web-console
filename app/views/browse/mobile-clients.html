@@ -42,7 +42,7 @@
   <div class="middle-content" persist-tab-state>
     <div class="container-fluid">
       <div ng-if="!ctrl.loaded">{{ctrl.emptyMessage}}</div>
-      <div class="row" ng-if="ctrl.loaded">
+      <div ng-if="ctrl.loaded" class="row">
         <div class="col-md-12" ng-class="{ 'hide-tabs' : !ctrl.mobileClient }">
           <uib-tabset>
             <uib-tab active="selectedTab.configuration">
@@ -50,7 +50,7 @@
               <div class="configuration">
                 <div class="row">
                   <div class="resource-details col-md-6">
-                    <h3>Mobile Client Details</h3>
+                    <h3>Details</h3>
                       <dl class="dl-horizontal left">
                         <dt>Client Type:</dt>
                         <dd>{{ctrl.mobileClient.spec.clientType}}</dd>
@@ -108,7 +108,7 @@
                   </div>
                   <div class="note" ng-if="!ctrl.mobileCIService && ctrl.mobileClient.spec.clientType !== 'xamarin'">
                     <p>Provision a Mobile CI | CD service to create a mobile build.</p>
-                    <button class="btn btn-primary btn-lg" ng-click="ctrl.goToMobileServices()">Browse Mobile Catalog</button>
+                    <button class="btn btn-primary btn-lg" ng-click="ctrl.goToMobileServices()">Browse Mobile Services</button>
                   </div>
                   <div ng-if="ctrl.mobileClient.spec.clientType === 'xamarin'"  class="row">
                     <div class="col-md-offset-1 col-md-10">
