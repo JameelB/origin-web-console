@@ -3,6 +3,7 @@
 (function() {
   angular.module('openshiftConsole').component('mobileServiceSdkDocs', {
     controller: [
+      "$filter",
       "APIService",
       "DataService",
       MobileServiceSdkDocs
@@ -18,9 +19,11 @@
 
 
 
-  function MobileServiceSdkDocs(APIService, DataService) {
+  function MobileServiceSdkDocs($filter, APIService, DataService) {
     var serviceBindingsVersion = APIService.getPreferredVersion('servicebindings');
     var serviceInstanceVersion = APIService.getPreferredVersion('serviceinstances');
+    var mobileBindingConsumerID = $filter('annotationName')('mobileBindingConsumerId');
+    var mobileBindingProviderID = $filter('annotationName')('mobileBindingProviderId');
 
     var ctrl = this;
     var watches = [];
@@ -31,8 +34,9 @@
 
       if (clientChanges && serviceClassChanges && watches.length === 0) {
         watches.push(DataService.watch(serviceBindingsVersion, {namespace: ctrl.context}, function(bindingsData) {
+          var mobileClientID = _.get(ctrl, 'mobileClient.metadata.name')
           ctrl.bindings = _.filter(bindingsData.by('metadata.name'), function(binding) {
-            return _.get(binding, ['metadata', 'annotations', 'binding.aerogear.org/consumer']) === _.get(ctrl, 'mobileClient.metadata.name');
+            return _.get(binding, ['metadata', 'annotations', mobileBindingConsumerID]) === mobileClientID;
           });
           ctrl.addDetailsToBindings();
         }));
@@ -43,7 +47,7 @@
       DataService.list(serviceInstanceVersion, {namespace: ctrl.context}, function (serviceInstances) {
         var serviceInstancesData = serviceInstances.by('metadata.name');
         ctrl.serviceSdkInfo = _.map(ctrl.bindings, function(binding) {
-          var bindingProviderInstance = serviceInstancesData[_.get(binding, ['metadata', 'annotations', 'binding.aerogear.org/provider'])];
+          var bindingProviderInstance = serviceInstancesData[_.get(binding, ['metadata', 'annotations', mobileBindingProviderID], "")];
           var serviceClass = ctrl.serviceClasses[_.get(bindingProviderInstance, 'spec.clusterServiceClassRef.name')];
 
           return {
